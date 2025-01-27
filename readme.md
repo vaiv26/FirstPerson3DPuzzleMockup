@@ -87,7 +87,7 @@ Dice Puzzle is an interactive puzzle mechanic where players navigate crescent-sh
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/vaiv26/ProgrammingTestunderDOGS.git
+git clone https://github.com/vaiv26/FirstPerson3DPuzzleMockup.git
 ```
 2. Open the project in Unreal Engine 5.3.2
 3. Build and run the project using Rider or your preferred IDE
