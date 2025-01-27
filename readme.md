@@ -4,7 +4,6 @@ A first-person puzzle game mechanic implemented in Unreal Engine 5, featuring a 
 
 ## Project Links
 * **Video Demo**: [Watch on Google Drive](https://drive.google.com/file/d/1UKSYwOQMsROjfgP73scTWrkI-ewJCAqY/view?usp=sharing)
-* **GitHub Repository**: [ProgrammingTestunderDOGS](https://github.com/vaiv26/ProgrammingTestunderDOGS.git)
 
 ## Technical Requirements
 * **Engine**: Unreal Engine 5.3.2
