@@ -100,7 +100,3 @@ git clone https://github.com/vaiv26/FirstPerson3DPuzzleMockup.git
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## License
-
-[Add your chosen license]
-
