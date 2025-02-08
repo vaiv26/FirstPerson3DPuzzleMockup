@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "PuzzleBoard.generated.h"
 
+class USplineComponent;
 class APuzzleNodes;
 
 UCLASS()
@@ -34,6 +35,9 @@ protected:
 	void SetupNodeConnectionsByPattern();
 
 	UFUNCTION(Category = "Nodes")
+	void SetupSplineAndNodeConnection();
+
+	UFUNCTION(Category = "Nodes")
 	void DrawDebugConnection();
 public:	
 	virtual void Tick(float DeltaTime) override;
@@ -46,6 +50,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Nodes")
 	TArray<AActor*> NodeTargetPoints;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Splines")
+	TArray<USplineComponent*> PuzzleSplines;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Nodes")
 	TSubclassOf<APuzzleNodes> NodeClass;

@@ -3,6 +3,7 @@
 
 #include "PuzzleManagers/PuzzleBoard.h"
 
+#include "Components/SplineComponent.h"
 #include "Game/PuzzleGameModeBase.h"
 #include "PuzzleManagers/PuzzleNodes.h"
 
@@ -172,6 +173,17 @@ void APuzzleBoard::SetupNodeConnectionsByPattern()
 
 	//checking Connection
 	//DrawDebugConnection();
+}
+
+void APuzzleBoard::SetupSplineAndNodeConnection()
+{
+	for (int i = 0;i < PuzzleSplines.Num();i++)
+	{
+		for (int j = 0;j < PuzzleSplines[i]->GetNumberOfSplinePoints() ;j++)
+		{
+			
+		}
+	}
 }
 
 void APuzzleBoard::DrawDebugConnection()
