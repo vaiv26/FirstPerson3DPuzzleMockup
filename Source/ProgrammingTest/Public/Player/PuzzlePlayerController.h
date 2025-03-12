@@ -23,8 +23,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Switch")
 	void SwitchAndPossess();
-
-	
 	
 protected:
 	virtual void BeginPlay() override;
@@ -34,9 +32,6 @@ protected:
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Camera")
 	TSubclassOf<ACameraActor> FixedCameraComponent;
-
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Pawns")
-	TArray<TSubclassOf<APuzzleCrescentPiece>> PuzzlePieces;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Pawns")
 	TObjectPtr<APawn> FirstPerson;
@@ -72,7 +67,7 @@ private:
 	void Move(const struct FInputActionValue& InputActionValue);
 	
 	void SwitchToNextPuzzlePiece();
-	void SpawnPuzzlePiece();
+	//void SpawnPuzzlePiece();
 	
 	bool bCanPerformAction;
 

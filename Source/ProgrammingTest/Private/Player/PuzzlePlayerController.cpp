@@ -14,8 +14,8 @@ APuzzlePlayerController::APuzzlePlayerController()
 	NextPawn = 0;
 	CooldownTime = 5.0f;
 	bCanPerformAction = true;
-	
 }
+
 
 void APuzzlePlayerController::SwitchAndPossess()
 {
@@ -26,13 +26,14 @@ void APuzzlePlayerController::SwitchAndPossess()
 		return;
 	}
 	
-	if (PuzzlePieces.Num() > 0)
+	if (FoundPawns.Num() > 0)
 	{
-		SpawnPuzzlePiece();
+		//SpawnPuzzlePiece();
+		SwitchToNextPuzzlePiece();
 
 		FViewTargetTransitionParams TransitionParams;
-		TransitionParams.BlendTime = 2.0f;
-		TransitionParams.BlendFunction = EViewTargetBlendFunction::VTBlend_Cubic;
+		TransitionParams.BlendTime = 0.75f;
+		TransitionParams.BlendFunction = EViewTargetBlendFunction::VTBlend_EaseOut;
       
 		SetViewTargetWithBlend(
 			FoundCamera,
@@ -41,7 +42,7 @@ void APuzzlePlayerController::SwitchAndPossess()
 		);
 	}
 }
-
+/**
 void APuzzlePlayerController::SpawnPuzzlePiece()
 {
 	for (int i = 0;i < PuzzlePieces.Num();i++)
@@ -63,6 +64,7 @@ void APuzzlePlayerController::SpawnPuzzlePiece()
 	}
 	SwitchToNextPuzzlePiece();
 }
+**/
 void APuzzlePlayerController::ResetCooldown()
 {
 	bCanPerformAction = true;
@@ -97,7 +99,7 @@ void APuzzlePlayerController::SwitchToNextPuzzlePiece()
 		UnPossess();
 		NextPawn = (CurrentPawn + 1) % FoundPawns.Num();
 		Possess(FoundPawns[NextPawn]);
-		DrawPawnHighlight(FoundPawns[NextPawn]);
+		DrawPawnHighlight(FoundPawns[NextPawn], FColor::Red);
 		CurrentPawn = NextPawn;
 		bAutoManageActiveCameraTarget = false;
 	}
@@ -122,6 +124,18 @@ void APuzzlePlayerController::BeginPlay()
 	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	InputModeData.SetHideCursorDuringCapture(false);
 	SetInputMode(InputModeData);
+
+	// Getting the Pawns
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APuzzleCrescentPiece::StaticClass(), FoundActors);
+	for (AActor* Actor : FoundActors)
+	{
+		APuzzleCrescentPiece* Puzzlepiece = Cast<APuzzleCrescentPiece>(Actor);
+		if (Puzzlepiece)
+		{
+			FoundPawns.Add(Puzzlepiece);
+		}
+	}
 }
 
 void APuzzlePlayerController::SetupInputComponent()
