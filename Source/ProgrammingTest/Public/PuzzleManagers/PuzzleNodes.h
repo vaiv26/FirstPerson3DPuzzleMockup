@@ -16,9 +16,6 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Node")
 	TArray<APuzzleNodes*> ConnectedNodes;
-	
-	UFUNCTION(BlueprintCallable, Category = "Node")
-	bool IsConnectedTo(APuzzleNodes* OtherNode) const;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Node")
 	bool bIsOccupied;
@@ -28,8 +25,5 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
-public:	
-	virtual void Tick(float DeltaTime) override;
 
 };

@@ -19,28 +19,19 @@ public:
 	// Sets default values for this component's properties
 	UPuzzleQueryComponent();
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	// The currently selected node
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Puzzle")
+	TObjectPtr<APuzzleNodes> CurrentNode;
 
 	// Reference to the puzzle board
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Puzzle")
 	TSubclassOf<APuzzleBoard> PuzzleBoard;
 
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+private:
 	TObjectPtr<APuzzleBoard> BoardInstance;
-
-	// The currently selected node
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Puzzle")
-	TObjectPtr<APuzzleNodes> CurrentNode;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Puzzle")
-	FVector CenterLocation;
-
-	UFUNCTION(BlueprintCallable, Category = "Puzzle")
-	void FoundHome();
 		
 };

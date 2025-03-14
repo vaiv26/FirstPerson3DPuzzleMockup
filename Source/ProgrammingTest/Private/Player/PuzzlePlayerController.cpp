@@ -4,8 +4,10 @@
 #include "Player/PuzzlePlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
-#include "Camera/CameraActor.h"
+#include "Interfaces/SequenceInterface.h"
 #include "Kismet/GameplayStatics.h"
+#include "PuzzleManagers/PuzzleBoard.h"
+#include "PuzzleManagers/PuzzleCameraActor.h"
 #include "PuzzlePieces/PuzzleCrescentPiece.h"
 
 APuzzlePlayerController::APuzzlePlayerController()
@@ -20,51 +22,16 @@ APuzzlePlayerController::APuzzlePlayerController()
 void APuzzlePlayerController::SwitchAndPossess()
 {
 	if (bPuzzleCompleted) return;
-	AActor* FoundCamera = UGameplayStatics::GetActorOfClass(GetWorld(), FixedCameraComponent);
-	if (!FoundCamera)
-	{
-		return;
-	}
-	
 	if (FoundPawns.Num() > 0)
 	{
-		//SpawnPuzzlePiece();
 		SwitchToNextPuzzlePiece();
-
-		FViewTargetTransitionParams TransitionParams;
-		TransitionParams.BlendTime = 0.75f;
-		TransitionParams.BlendFunction = EViewTargetBlendFunction::VTBlend_EaseOut;
-      
-		SetViewTargetWithBlend(
-			FoundCamera,
-			TransitionParams.BlendTime,
-			TransitionParams.BlendFunction
-		);
 	}
-}
-/**
-void APuzzlePlayerController::SpawnPuzzlePiece()
-{
-	for (int i = 0;i < PuzzlePieces.Num();i++)
+	if (ISequenceInterface* SequenceInterface = Cast<ISequenceInterface>(UGameplayStatics::GetActorOfClass(GetWorld(), FixedCameraComponent)))
 	{
-		if (PuzzlePieces[i])
-		{
-			
-			APuzzleCrescentPiece* PuzzlePiece = GetWorld()->SpawnActor<APuzzleCrescentPiece>(
-				PuzzlePieces[i],
-				PawnLocations[i],
-				FRotator::ZeroRotator
-			);
-
-			if (PuzzlePiece)
-			{
-				FoundPawns.Add(PuzzlePiece);
-			}
-		}
+		SequenceInterface->PlaySequence(this);
 	}
-	SwitchToNextPuzzlePiece();
 }
-**/
+
 void APuzzlePlayerController::ResetCooldown()
 {
 	bCanPerformAction = true;
@@ -134,6 +101,14 @@ void APuzzlePlayerController::BeginPlay()
 		if (Puzzlepiece)
 		{
 			FoundPawns.Add(Puzzlepiece);
+		}
+	}
+
+	if (AActor* PuzzleBoardActor = UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleBoard::StaticClass()))
+	{
+		if (APuzzleBoard* PuzzleBoard = Cast<APuzzleBoard>(PuzzleBoardActor))
+		{
+			PuzzleBoard->OnPuzzleCompleted.BindUObject(this, &APuzzlePlayerController::InvokeCompletionEvent);
 		}
 	}
 }

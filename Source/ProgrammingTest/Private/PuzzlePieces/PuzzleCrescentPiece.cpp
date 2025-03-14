@@ -59,6 +59,7 @@ void APuzzleCrescentPiece::Tick(float DeltaTime)
 
 void APuzzleCrescentPiece::UpdateMovement(float DeltaTime)
 {
+	
 	if (!QueryActorComponent->CurrentNode || !QueryActorComponent->PuzzleBoard || bIsHome) return;
 	FVector MovementDirection = CurrentVelocity.GetSafeNormal();
     
@@ -109,8 +110,9 @@ void APuzzleCrescentPiece::UpdateMovement(float DeltaTime)
 		{
 			//Puzzle Completed by this piece
 			bIsHome = true;
-			QueryActorComponent->FoundHome();
-		}
+			OnIsHome.Execute();
+		} 
 	}
+	
 }
 

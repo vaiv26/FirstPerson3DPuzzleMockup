@@ -13,9 +13,5 @@ UCLASS()
 class PROGRAMMINGTEST_API APuzzleGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-
-public:
-	UFUNCTION(BlueprintCallable, Category = "PuzzleGameModeBase")
-	void PuzzleCompletionEvent();
 	
 };

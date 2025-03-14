@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "PuzzlePlayerController.generated.h"
 
+class APuzzleCameraActor;
 class APuzzleFirstPerson;
 class APuzzleCrescentPiece;
 class UInputMappingContext;
@@ -31,7 +32,7 @@ protected:
 
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Camera")
-	TSubclassOf<ACameraActor> FixedCameraComponent;
+	TSubclassOf<APuzzleCameraActor> FixedCameraComponent;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Pawns")
 	TObjectPtr<APawn> FirstPerson;
