@@ -47,10 +47,6 @@ public:
 
 private:
 	bool bIsHome = false;
-	bool bIsMoving = false;
-	FVector StartPos = FVector::ZeroVector;
-	FVector EndPos = FVector::ZeroVector;
-	float MovementAlpha = 0.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	FVector CurrentVelocity;
 	UPROPERTY(EditAnywhere, Category = "Movement")
