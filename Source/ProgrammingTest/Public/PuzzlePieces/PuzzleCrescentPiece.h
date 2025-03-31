@@ -7,7 +7,10 @@
 #include "GameFramework/Pawn.h"
 #include "PuzzleCrescentPiece.generated.h"
 
+class APuzzleNodes;
+class UInputAction;
 class UPuzzleQueryComponent;
+class UFloatingPawnMovement;
 
 DECLARE_DELEGATE(FISHomeDelegate);
 
@@ -19,14 +22,16 @@ class PROGRAMMINGTEST_API APuzzleCrescentPiece : public APawn
 public:
 	APuzzleCrescentPiece();
 
+	UFUNCTION()
+	void OnComponentOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,UPrimitiveComponent* OtherCoponent, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult);
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 public:	
 
 	virtual void Tick(float DeltaTime) override;
-
-	virtual void AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce) override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCapsuleComponent* CapsuleComponent;
@@ -45,18 +50,26 @@ public:
 
 	FISHomeDelegate OnIsHome;
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Movement")
+	float MovementThreshold = 5.f;
+
 private:
 	bool bIsHome = false;
-	UPROPERTY(EditAnywhere, Category = "Movement")
-	FVector CurrentVelocity;
-	UPROPERTY(EditAnywhere, Category = "Movement")
-	bool IsMovingToNode;
-	UPROPERTY(EditAnywhere, Category = "Movement")
-	FVector TargetLocation;
+	bool bIsTargetNode = false;
+	bool bShouldIgnore = false;
+	TObjectPtr<APuzzleNodes> TargetNode = nullptr;
+	TObjectPtr<AActor> TargetActor  = nullptr;
+	TArray<AActor*> OverlappingActors;
+	TSet<FVector> IgnoreLocations;
+	TArray<FVector> IgnoreDirections;
 	
-	void UpdateMovement(float DeltaTime);
+	UPROPERTY(EditAnywhere,Category = "Movement")
+	UFloatingPawnMovement* MovementComponent;
 
-	UPROPERTY(EditAnywhere,Category="Movement")
-	FVector PendingMovementInput;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> MoveAction;
+	
+	void PuzzleMovement(const struct FInputActionValue& InputActionValue);
+	void UpdateMovement();
 
 };

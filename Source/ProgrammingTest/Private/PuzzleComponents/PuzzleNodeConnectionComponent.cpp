@@ -2,6 +2,7 @@
 
 
 #include "PuzzleComponents/PuzzleNodeConnectionComponent.h"
+
 #include "PuzzleManagers/PuzzleNodes.h"
 
 // Sets default values for this component's properties
@@ -19,8 +20,111 @@ void UPuzzleNodeConnectionComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UPuzzleNodeConnectionComponent::SetupNodeConnection(TArray<APuzzleNodes*> SpawnedNodes, FVector CenterLocationNode)
+void UPuzzleNodeConnectionComponent::SetupNodeConnection(TArray<APuzzleNodes*> SpawnedNodes, FVector CenterLocationNode,int MatrixSize)
 {
+	//Traversing diagonals and connecting them
+	//1st cross top to bottom
+	APuzzleNodes* PreviousActor = nullptr;
+	TSet<APuzzleNodes*> SpawnedNodeSet;
+	for (int i = 0, j = 0; i < MatrixSize; i++,j += (MatrixSize + 1))
+	{
+		APuzzleNodes* CurrentActor = SpawnedNodes[j];
+		if (PreviousActor == nullptr)
+		{
+			PreviousActor = CurrentActor;
+		}
+		else if (PreviousActor != nullptr && (PreviousActor->GetActorLocation() - CenterLocationNode).Length() <= 1.0f)
+		{
+			PreviousActor = CurrentActor;
+			continue;
+		}
+		else
+		{
+			if (!SpawnedNodeSet.Contains(PreviousActor))
+			{
+				SpawnedNodeSet.Add(PreviousActor);
+				DebuggingNodes.Add(PreviousActor);
+			}
+			PreviousActor->ConnectedNodes.AddUnique(CurrentActor);
+			PreviousActor = CurrentActor;
+		}
+	}
+	//2nd cross top to bottom
+	PreviousActor = nullptr;
+	for (int i = 0, j = MatrixSize - 1; i < MatrixSize; i++,j += (MatrixSize - 1))
+	{
+		APuzzleNodes* CurrentActor = SpawnedNodes[j];
+		if (PreviousActor == nullptr)
+		{
+			PreviousActor = CurrentActor;
+		}
+		else if (PreviousActor != nullptr && (PreviousActor->GetActorLocation() - CenterLocationNode).Length() <= 1.0f)
+		{
+			PreviousActor = CurrentActor;
+			continue;
+		}
+		else
+		{
+			if (!SpawnedNodeSet.Contains(PreviousActor))
+			{
+				SpawnedNodeSet.Add(PreviousActor);
+				DebuggingNodes.Add(PreviousActor);
+			}
+			PreviousActor->ConnectedNodes.AddUnique(CurrentActor);
+			PreviousActor = CurrentActor;
+		}
+	}
+	//3rd cross bottom to top
+	PreviousActor = nullptr;
+	for (int i = 0, j = (SpawnedNodes.Num() - 1) - (MatrixSize - 1); i < MatrixSize; i++,j -= (MatrixSize - 1))
+	{
+		APuzzleNodes* CurrentActor = SpawnedNodes[j];
+		if (PreviousActor == nullptr)
+		{
+			PreviousActor = CurrentActor;
+		}
+		else if (PreviousActor != nullptr && (PreviousActor->GetActorLocation() - CenterLocationNode).Length() <= 1.0f)
+		{
+			PreviousActor = CurrentActor;
+			continue;
+		}
+		else
+		{
+			if (!SpawnedNodeSet.Contains(PreviousActor))
+			{
+				SpawnedNodeSet.Add(PreviousActor);
+				DebuggingNodes.Add(PreviousActor);
+			}
+			PreviousActor->ConnectedNodes.AddUnique(CurrentActor);
+			PreviousActor = CurrentActor;
+		}
+	}
+	//4th cross bottom to top
+	PreviousActor = nullptr;
+	for (int i = 0, j = (SpawnedNodes.Num() - 1); i < MatrixSize; i++,j -= (MatrixSize + 1))
+	{
+		APuzzleNodes* CurrentActor = SpawnedNodes[j];
+		if (PreviousActor == nullptr)
+		{
+			PreviousActor = CurrentActor;
+		}
+		else if (PreviousActor != nullptr && (PreviousActor->GetActorLocation() - CenterLocationNode).Length() <= 1.0f)
+		{
+			PreviousActor = CurrentActor;
+			continue;
+		}
+		else
+		{
+			if (!SpawnedNodeSet.Contains(PreviousActor))
+			{
+				SpawnedNodeSet.Add(PreviousActor);
+				DebuggingNodes.Add(PreviousActor);
+			}
+			PreviousActor->ConnectedNodes.AddUnique(CurrentActor);
+			PreviousActor = CurrentActor;
+		}
+	}
+	/*
 	// Sorting nodes by Y coordinate to group rows
 	SpawnedNodes.Sort([](const APuzzleNodes& A, const APuzzleNodes& B) {
 		return A.GetActorLocation().Y < B.GetActorLocation().Y;
@@ -38,7 +142,7 @@ void UPuzzleNodeConnectionComponent::SetupNodeConnection(TArray<APuzzleNodes*> S
 		RowGroups[YCoord].Add(Node);
 	}
 
-     //sorting nodes by x and connect adjacent nodes
+     //Sorting nodes within each row based on x coordinate
 	for (auto& Row : RowGroups)
 	{
 		Row.Value.Sort([](const APuzzleNodes& A, const APuzzleNodes& B) {
@@ -70,7 +174,7 @@ void UPuzzleNodeConnectionComponent::SetupNodeConnection(TArray<APuzzleNodes*> S
 		ColumnGroups[ZCoord].Add(Node);
 	} 
 
-	// Connecting nodes in columns
+	// Sorting nodes within each column based on y coordinate
 	for (auto& Column : ColumnGroups)
 	{
 		Column.Value.Sort([](const APuzzleNodes& A, const APuzzleNodes& B) {
@@ -84,6 +188,7 @@ void UPuzzleNodeConnectionComponent::SetupNodeConnection(TArray<APuzzleNodes*> S
 		}
 	}
 	// Now adding only the specific diagonal connections to form the X pattern
+	//Find center node
 	APuzzleNodes* CenterNode = nullptr;
 	FVector CenterLocation = CenterLocationNode;
 	float ClosestToCenterDist = MAX_FLT;
@@ -115,24 +220,26 @@ void UPuzzleNodeConnectionComponent::SetupNodeConnection(TArray<APuzzleNodes*> S
 				// Connecting this corner node to the center
 				CenterNode->ConnectedNodes.AddUnique(PotentialCornerNode);
 				PotentialCornerNode->ConnectedNodes.AddUnique(CenterNode);
+				DebuggingNodes.Add(PotentialCornerNode);
 			}
 		}
-	}
+	}*/
+	
 
 	//checking Connection
-	//DrawDebugConnection(SpawnedNodes);
+	DrawDebugConnection(DebuggingNodes);
 }
 
 
 void UPuzzleNodeConnectionComponent::DrawDebugConnection(TArray<APuzzleNodes*> SpawnedNodes)
 {
-	for (APuzzleNodes* Node : SpawnedNodes)
+	for (int i = 0;i < SpawnedNodes.Num();i++)
 	{
-		if (Node)
+		if (SpawnedNodes[i])
 		{
-			FVector StartLoc = Node->GetActorLocation();
+			FVector StartLoc = SpawnedNodes[i]->GetActorLocation();
 			
-			for (APuzzleNodes* ConnectedNode : Node->ConnectedNodes)
+			for (AActor* ConnectedNode : SpawnedNodes[i]->ConnectedNodes)
 			{
 				if (ConnectedNode)
 				{
@@ -142,24 +249,23 @@ void UPuzzleNodeConnectionComponent::DrawDebugConnection(TArray<APuzzleNodes*> S
 						GetWorld(),
 						StartLoc,
 						EndLoc,
-						FColor::Green, 
+						FColor::Red, 
 						true,         
 						-1.f,       
 						0,              
 						2.f             
 					);
-					
-					DrawDebugSphere(
-						GetWorld(),
-						StartLoc,
-						10.f,      
-						12,         
-						FColor::Red,  
-						true,        
-						-1.f          
-					);
 				}
 			}
+			DrawDebugSphere(
+				GetWorld(),
+				StartLoc,
+				10.f,      
+				12,
+				FColor::Green,  
+				true,        
+				-1.f
+				);
 		}
 	}
 }

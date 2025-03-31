@@ -32,10 +32,13 @@ protected:
 	UFUNCTION(Category = "Nodes")
 	void SpawnNodes();
 	
-public:	
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nodes")
+	int32 BoardMatrixSize;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Nodes")
-	FVector CenterLocationNode;
+	AActor* CenterLocationNode;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* PuzzleBoardMesh;

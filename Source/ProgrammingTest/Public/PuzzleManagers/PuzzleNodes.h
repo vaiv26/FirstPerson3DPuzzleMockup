@@ -15,7 +15,7 @@ public:
 	APuzzleNodes();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Node")
-	TArray<APuzzleNodes*> ConnectedNodes;
+	TArray<AActor*> ConnectedNodes;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Node")
 	bool bIsOccupied;

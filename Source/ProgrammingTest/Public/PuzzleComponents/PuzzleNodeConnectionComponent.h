@@ -19,7 +19,7 @@ public:
 	UPuzzleNodeConnectionComponent();
 
 	UFUNCTION()
-	void SetupNodeConnection(TArray<APuzzleNodes*> SpawnedNodes, FVector CenterLocationNode);
+	void SetupNodeConnection(TArray<APuzzleNodes*> SpawnedNodes, FVector CenterLocationNode,int32 MatrixSize);
 
 	UFUNCTION(Category = "Nodes")
 	void DrawDebugConnection(TArray<APuzzleNodes*> SpawnedNodes);
@@ -27,6 +27,9 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+private:
+	TArray<APuzzleNodes*> DebuggingNodes;
 
 		
 };

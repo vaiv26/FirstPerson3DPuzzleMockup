@@ -4,6 +4,7 @@
 #include "Player/PuzzlePlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "GameFramework/Character.h"
 #include "Interfaces/SequenceInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "PuzzleManagers/PuzzleBoard.h"
@@ -134,10 +135,10 @@ void APuzzlePlayerController::Move(const struct FInputActionValue& InputActionVa
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	if (APawn* ControlledPawn = GetPawn<APawn>())
+	if (ACharacter* ControlledPawnCharacter = GetPawn<ACharacter>())
 	{
-		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
-		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
+		ControlledPawnCharacter->AddMovementInput(ForwardDirection, InputAxisVector.Y);
+		ControlledPawnCharacter->AddMovementInput(RightDirection, InputAxisVector.X);
 	}
 }
 

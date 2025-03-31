@@ -66,18 +66,15 @@ void APuzzleBoard::SpawnNodes()
 
 		APuzzleNodes* NewNode = GetWorld()->SpawnActor<APuzzleNodes>(NodeClass, WorldPosition, FRotator::ZeroRotator, SpawnParams);
 
+
 		if (NewNode)
 		{
 			SpawnedNodes.Add(NewNode);
-			if (NewNode->GetActorLocation() == CenterLocationNode)
-			{
-				NewNode->bIsCenterNode = true;
-			}
 		}
 	}
 	//Set Up Node Connections
 	//SetupNodeConnectionsByPattern();
-	ConnectionComponent->SetupNodeConnection(SpawnedNodes, CenterLocationNode);
+	ConnectionComponent->SetupNodeConnection(SpawnedNodes, CenterLocationNode->GetActorLocation(),BoardMatrixSize);
 }
 
 void APuzzleBoard::CompletionEvent()

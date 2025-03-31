@@ -2,11 +2,10 @@
 
 
 #include "PuzzlePieces/PuzzleCrescentPiece.h"
-
+#include "EnhancedInputComponent.h"
 #include "Components/CapsuleComponent.h"
-
+#include "GameFramework/FloatingPawnMovement.h"
 #include "PuzzleComponents/PuzzleQueryComponent.h"
-#include "PuzzleManagers/PuzzleBoard.h"
 #include "PuzzleManagers/PuzzleNodes.h"
 
 // Sets default values
@@ -16,103 +15,149 @@ APuzzleCrescentPiece::APuzzleCrescentPiece()
 	
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComponent"));
 	RootComponent = CapsuleComponent;
-	
-	CapsuleComponent->SetCollisionProfileName(TEXT("Pawn"));
+	CapsuleComponent->SetGenerateOverlapEvents(true);
+	CapsuleComponent->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+	CapsuleComponent->SetCollisionProfileName(TEXT("Custom"));
+	CapsuleComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	CapsuleComponent->SetCollisionResponseToChannel(ECC_WorldDynamic,ECR_Overlap);
+	CapsuleComponent->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);
 
 	CrescentMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CrescentMeshComponent"));
 	CrescentMesh->SetupAttachment(CapsuleComponent);
-	
+	CrescentMesh->SetGenerateOverlapEvents(false); 
 	CrescentMesh->SetCollisionProfileName(TEXT("NoCollision"));
 	
 	QueryActorComponent = CreateDefaultSubobject<UPuzzleQueryComponent>(TEXT("PuzzleQueries"));
 	AddOwnedComponent(QueryActorComponent);
+
+	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
+	MovementComponent->MaxSpeed = 50.0f;
+	MovementComponent->Acceleration = 50.f;
+	MovementComponent->Deceleration = 200.f;
 }
+
 void APuzzleCrescentPiece::BeginPlay()
 {
 	Super::BeginPlay();
+	CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this,&APuzzleCrescentPiece::OnComponentOverlap);
 }
 
-void APuzzleCrescentPiece::AddMovementInput(const FVector WorldDirection, const float ScaleValue, const bool bForce)
+void APuzzleCrescentPiece::OnComponentOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherCoponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Super::AddMovementInput(WorldDirection, ScaleValue, bForce);
+}
 
-	PendingMovementInput += WorldDirection * ScaleValue;
+void APuzzleCrescentPiece::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
+
+	EnhancedInputComponent->BindAction(MoveAction,ETriggerEvent::Triggered,this,&APuzzleCrescentPiece::PuzzleMovement);
 }
 
 void APuzzleCrescentPiece::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	if (!PendingMovementInput.IsNearlyZero())
-	{
-		CurrentVelocity = PendingMovementInput * MovementSpeed;
-		PendingMovementInput = FVector::ZeroVector;
-	}
-	else
-	{
-		CurrentVelocity = FVector::ZeroVector;
-	}
-    
-	UpdateMovement(DeltaTime);
-
+	UpdateMovement();
 }
 
-void APuzzleCrescentPiece::UpdateMovement(float DeltaTime)
+void APuzzleCrescentPiece::UpdateMovement()
 {
-	
-	if (!QueryActorComponent->CurrentNode || !QueryActorComponent->PuzzleBoard || bIsHome) return;
-	FVector MovementDirection = CurrentVelocity.GetSafeNormal();
-    
-	if (!MovementDirection.IsZero())
+	if (bIsTargetNode && TargetActor != nullptr && !bIsHome)
 	{
-		APuzzleNodes* TargetNode = nullptr;
-		float BestDotProduct = -1.0f;
-		// Find next node based on Input Direction
-		for (APuzzleNodes* ConnectedNode : QueryActorComponent->CurrentNode->ConnectedNodes)
+		const FVector EndPos = TargetActor->GetActorLocation();
+		const FVector MoveDirection = (EndPos - GetActorLocation()).GetSafeNormal();
+    
+		MovementComponent->AddInputVector(MoveDirection); // Smooth movement
+
+		if ((GetActorLocation() - EndPos).Length() <= MovementThreshold)
 		{
-			if (ConnectedNode->bIsOccupied) continue;
-			
-			FVector PathDirection = (ConnectedNode->GetActorLocation() - QueryActorComponent->CurrentNode->GetActorLocation()).GetSafeNormal();
-			float DotProduct = FVector::DotProduct(MovementDirection, PathDirection);
-            
-			// Direction check Threshold
-			if (DotProduct > 0.3f && DotProduct > BestDotProduct)
-			{
-				BestDotProduct = DotProduct;
-				TargetNode = ConnectedNode;
-			}
+			bIsTargetNode = false;
+			//QueryActorComponent->CurrentNode->bIsOccupied= false;
+			//QueryActorComponent->CurrentNode = TargetNode;
+			//QueryActorComponent->CurrentNode->bIsOccupied = true;
+			MovementComponent->StopActiveMovement();
 		}
-		if (TargetNode)
+
+		if ((GetActorLocation() - HomeLocation).Length() <= 2.0f)
 		{
-			FVector StartPos = QueryActorComponent->CurrentNode->GetActorLocation();
-			FVector EndPos = TargetNode->GetActorLocation();
-			
-			FVector NewLocation = FMath::VInterpTo(
-				GetActorLocation(),
-				EndPos,
-				DeltaTime,
-				5.0f
-			);
-			
-			FVector ProjectedLocation = FMath::ClosestPointOnLine(StartPos, EndPos, NewLocation);
-			SetActorLocation(ProjectedLocation);
-            
-			// Update current node
-			if (FVector::Dist(GetActorLocation(), EndPos) < 15.0f)
-			{
-				SetActorLocation(EndPos); // Snap to exact position
-				QueryActorComponent->CurrentNode->bIsOccupied= false;
-				QueryActorComponent->CurrentNode = TargetNode;
-				QueryActorComponent->CurrentNode->bIsOccupied = true;
-			}
-		}
-		if (FVector::Dist(GetActorLocation(), HomeLocation) < 2.0f)
-		{
-			//Puzzle Completed by this piece
 			bIsHome = true;
 			OnIsHome.Execute();
 		} 
 	}
-	
 }
+
+void APuzzleCrescentPiece::PuzzleMovement(const struct FInputActionValue& InputActionValue)
+{
+	if (!QueryActorComponent->CurrentNode || bIsHome) return;
+	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
+	if (InputAxisVector.IsNearlyZero()) return;
+  
+	const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
+	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	CapsuleComponent->GetOverlappingActors(OverlappingActors);
+	// Find the best target node based on the input direction
+	float BestDotProduct = -1.0f;
+	const FVector InputDirection = (ForwardDirection * InputAxisVector.Y + RightDirection * InputAxisVector.X).GetSafeNormal();
+	//TargetNode = nullptr;
+	TargetActor = nullptr;
+	bIsTargetNode = false;
+	IgnoreLocations.Empty();
+	/*
+	for (APuzzleNodes* ConnectedNode : QueryActorComponent->CurrentNode->ConnectedNodes)
+	{
+		if (ConnectedNode->bIsOccupied) continue;
+		
+		FVector PathDirection = (ConnectedNode->GetActorLocation() - QueryActorComponent->CurrentNode->GetActorLocation()).GetSafeNormal();
+		float DotProduct = FVector::DotProduct(InputDirection, PathDirection);
+
+		if (DotProduct > 0.8f && DotProduct > BestDotProduct)
+		{
+			BestDotProduct = DotProduct;
+			TargetNode = ConnectedNode;
+		}
+	}
+	if (TargetNode != nullptr)
+	{
+		bIsTargetNode = true;
+		UE_LOG(LogTemp,Display, TEXT("The name of the target Node: [%s]"),*TargetNode.GetName());
+	}
+	*/
+	TArray<AActor*> AdditionalActors;
+	for (AActor* Actor : OverlappingActors)
+	{
+		APuzzleNodes* Node = Cast<APuzzleNodes>(Actor);
+		if (Node && Node->ConnectedNodes.Num() > 0)
+		{
+			AdditionalActors.Append(Node->ConnectedNodes);
+		}
+		if (const APuzzleCrescentPiece* CrescentPiece = Cast<APuzzleCrescentPiece>(Actor))
+		{
+			IgnoreLocations.Add(Actor->GetActorLocation());
+		}
+	}
+	OverlappingActors.Append(AdditionalActors);
+	for (AActor* OverlappedActor: OverlappingActors)
+	{
+		if ((GetActorLocation() - OverlappedActor->GetActorLocation()).Length() <= 2.0 ||
+			IgnoreLocations.Contains(OverlappedActor->GetActorLocation())) continue;
+		
+		FVector PathDirection = (OverlappedActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+		float DotProduct = FVector::DotProduct(InputDirection, PathDirection);
+		if (DotProduct > 0.8f && DotProduct > BestDotProduct)
+		{
+			BestDotProduct = DotProduct;
+			TargetActor = OverlappedActor;
+		}
+	}
+	if (TargetActor != nullptr)
+	{
+		bIsTargetNode = true;
+	}
+
+}
+
+
 
