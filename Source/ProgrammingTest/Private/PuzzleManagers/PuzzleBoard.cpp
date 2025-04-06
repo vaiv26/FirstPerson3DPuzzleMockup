@@ -80,12 +80,14 @@ void APuzzleBoard::SpawnNodes()
 void APuzzleBoard::CompletionEvent()
 {
 	PawnFoundHome += 1;
+	UE_LOG(LogTemp, Warning, TEXT("PawnFoundHome %d"), PawnFoundHome);
 	if (PawnFoundHome >= 4)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("PawnFoundHome %d"), PawnFoundHome);
 		OnPuzzleCompleted.Execute();
 	}
 }
-
+/*
 TObjectPtr<APuzzleNodes> APuzzleBoard::GetClosestNode(FVector ActorLocation)
 {
 	float ClosestDistance = MAX_FLT;
@@ -101,5 +103,5 @@ TObjectPtr<APuzzleNodes> APuzzleBoard::GetClosestNode(FVector ActorLocation)
 	}
 	return ClosestNode;
 }
-
+*/
 

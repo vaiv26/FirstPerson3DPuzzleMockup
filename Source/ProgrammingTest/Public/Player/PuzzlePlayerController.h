@@ -68,7 +68,6 @@ private:
 	void Move(const struct FInputActionValue& InputActionValue);
 	
 	void SwitchToNextPuzzlePiece();
-	//void SpawnPuzzlePiece();
 	
 	bool bCanPerformAction;
 

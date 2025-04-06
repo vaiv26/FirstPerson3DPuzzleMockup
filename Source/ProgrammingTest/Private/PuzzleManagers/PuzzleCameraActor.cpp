@@ -14,7 +14,7 @@ APuzzleCameraActor::APuzzleCameraActor()
 	RootComponent = CineCamera;
 
 }
-
+/*
 void APuzzleCameraActor::PlaySequence(APlayerController* PC)
 {
 	FViewTargetTransitionParams TransitionParams;
@@ -27,7 +27,7 @@ void APuzzleCameraActor::PlaySequence(APlayerController* PC)
 		TransitionParams.BlendFunction
 	);
 }
-
+*/
 // Called when the game starts or when spawned
 void APuzzleCameraActor::BeginPlay()
 {

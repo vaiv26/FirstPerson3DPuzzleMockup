@@ -4,6 +4,7 @@
 #include "Player/PuzzlePlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Character/PuzzleFirstPerson.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/SequenceInterface.h"
 #include "Kismet/GameplayStatics.h"
@@ -27,9 +28,10 @@ void APuzzlePlayerController::SwitchAndPossess()
 	{
 		SwitchToNextPuzzlePiece();
 	}
-	if (ISequenceInterface* SequenceInterface = Cast<ISequenceInterface>(UGameplayStatics::GetActorOfClass(GetWorld(), FixedCameraComponent)))
+	if (FirstPerson->GetClass()->ImplementsInterface(USequenceInterface::StaticClass()))
 	{
-		SequenceInterface->PlaySequence(this);
+		ISequenceInterface::Execute_PlaySequence(FirstPerson);
+		SetViewTarget(FirstPerson);
 	}
 }
 
@@ -144,9 +146,14 @@ void APuzzlePlayerController::Move(const struct FInputActionValue& InputActionVa
 
 void APuzzlePlayerController::InvokeCompletionEvent()
 {
-	bAutoManageActiveCameraTarget = true;
 	UnPossess();
 	Possess(FirstPerson);
+	bAutoManageActiveCameraTarget = false;
+	if (FirstPerson->GetClass()->ImplementsInterface(USequenceInterface::StaticClass()))
+	{
+		ISequenceInterface::Execute_PlaySequence(FirstPerson);
+		SetViewTarget(FirstPerson);
+	}
 }
 
 

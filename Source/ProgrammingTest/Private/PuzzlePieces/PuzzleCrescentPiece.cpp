@@ -2,6 +2,8 @@
 
 
 #include "PuzzlePieces/PuzzleCrescentPiece.h"
+
+#include "CollisionDebugDrawingPublic.h"
 #include "EnhancedInputComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
@@ -15,6 +17,7 @@ APuzzleCrescentPiece::APuzzleCrescentPiece()
 	
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComponent"));
 	RootComponent = CapsuleComponent;
+	CapsuleComponent->SetCapsuleSize(0.1f,0.1f);
 	CapsuleComponent->SetGenerateOverlapEvents(true);
 	CapsuleComponent->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	CapsuleComponent->SetCollisionProfileName(TEXT("Custom"));
@@ -39,12 +42,18 @@ APuzzleCrescentPiece::APuzzleCrescentPiece()
 void APuzzleCrescentPiece::BeginPlay()
 {
 	Super::BeginPlay();
-	CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this,&APuzzleCrescentPiece::OnComponentOverlap);
 }
 
-void APuzzleCrescentPiece::OnComponentOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherCoponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void APuzzleCrescentPiece::PossessedBy(AController* NewController)
 {
+	Super::PossessedBy(NewController);
+	CapsuleComponent->SetCapsuleSize(38.f, 38.f);
+}
+
+void APuzzleCrescentPiece::UnPossessed()
+{
+	Super::UnPossessed();
+	CapsuleComponent->SetCapsuleSize(0.1f, 0.1f);
 }
 
 void APuzzleCrescentPiece::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -74,23 +83,22 @@ void APuzzleCrescentPiece::UpdateMovement()
 		if ((GetActorLocation() - EndPos).Length() <= MovementThreshold)
 		{
 			bIsTargetNode = false;
-			//QueryActorComponent->CurrentNode->bIsOccupied= false;
-			//QueryActorComponent->CurrentNode = TargetNode;
-			//QueryActorComponent->CurrentNode->bIsOccupied = true;
 			MovementComponent->StopActiveMovement();
 		}
 
-		if ((GetActorLocation() - HomeLocation).Length() <= 2.0f)
+		if ((GetActorLocation() - HomeLocation).Length() <= 6.0f)
 		{
 			bIsHome = true;
+			MovementComponent->StopActiveMovement();
 			OnIsHome.Execute();
+			
 		} 
 	}
 }
 
 void APuzzleCrescentPiece::PuzzleMovement(const struct FInputActionValue& InputActionValue)
 {
-	if (!QueryActorComponent->CurrentNode || bIsHome) return;
+	if (bIsHome) return;
 	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
 	if (InputAxisVector.IsNearlyZero()) return;
   
@@ -101,56 +109,51 @@ void APuzzleCrescentPiece::PuzzleMovement(const struct FInputActionValue& InputA
 	// Find the best target node based on the input direction
 	float BestDotProduct = -1.0f;
 	const FVector InputDirection = (ForwardDirection * InputAxisVector.Y + RightDirection * InputAxisVector.X).GetSafeNormal();
-	//TargetNode = nullptr;
 	TargetActor = nullptr;
 	bIsTargetNode = false;
-	IgnoreLocations.Empty();
-	/*
-	for (APuzzleNodes* ConnectedNode : QueryActorComponent->CurrentNode->ConnectedNodes)
-	{
-		if (ConnectedNode->bIsOccupied) continue;
-		
-		FVector PathDirection = (ConnectedNode->GetActorLocation() - QueryActorComponent->CurrentNode->GetActorLocation()).GetSafeNormal();
-		float DotProduct = FVector::DotProduct(InputDirection, PathDirection);
-
-		if (DotProduct > 0.8f && DotProduct > BestDotProduct)
-		{
-			BestDotProduct = DotProduct;
-			TargetNode = ConnectedNode;
-		}
-	}
-	if (TargetNode != nullptr)
-	{
-		bIsTargetNode = true;
-		UE_LOG(LogTemp,Display, TEXT("The name of the target Node: [%s]"),*TargetNode.GetName());
-	}
-	*/
+	IgnoreDirections.Empty();
 	TArray<AActor*> AdditionalActors;
 	for (AActor* Actor : OverlappingActors)
 	{
 		APuzzleNodes* Node = Cast<APuzzleNodes>(Actor);
-		if (Node && Node->ConnectedNodes.Num() > 0)
+		if (Node)
 		{
-			AdditionalActors.Append(Node->ConnectedNodes);
+			if (Node->ConnectedNodes.Num() > 0)
+			{
+				AdditionalActors.Append(Node->ConnectedNodes);
+			}
 		}
 		if (const APuzzleCrescentPiece* CrescentPiece = Cast<APuzzleCrescentPiece>(Actor))
 		{
-			IgnoreLocations.Add(Actor->GetActorLocation());
+			const FVector Direction = (Actor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+			IgnoreDirections.Add(Direction);
 		}
 	}
 	OverlappingActors.Append(AdditionalActors);
 	for (AActor* OverlappedActor: OverlappingActors)
 	{
-		if ((GetActorLocation() - OverlappedActor->GetActorLocation()).Length() <= 2.0 ||
-			IgnoreLocations.Contains(OverlappedActor->GetActorLocation())) continue;
+		if ((GetActorLocation() - OverlappedActor->GetActorLocation()).Length() <= 2.0) continue;
 		
 		FVector PathDirection = (OverlappedActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 		float DotProduct = FVector::DotProduct(InputDirection, PathDirection);
-		if (DotProduct > 0.8f && DotProduct > BestDotProduct)
+		if (DotProduct < 0.8f) continue;
+		bShouldIgnore = false;
+		for (FVector DirectionToAvoid : IgnoreDirections)
+		{
+			float AvoidDotProduct = FVector::DotProduct(DirectionToAvoid, InputDirection);
+			if (AvoidDotProduct > 0.9f)
+			{
+				bShouldIgnore = true;
+				break;
+			}
+		}
+		if (bShouldIgnore) continue;
+		if (DotProduct > BestDotProduct)
 		{
 			BestDotProduct = DotProduct;
 			TargetActor = OverlappedActor;
 		}
+		
 	}
 	if (TargetActor != nullptr)
 	{

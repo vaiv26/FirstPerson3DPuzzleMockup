@@ -17,7 +17,7 @@ UPuzzleQueryComponent::UPuzzleQueryComponent()
 void UPuzzleQueryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	if (PuzzleBoard)
+	/*if (PuzzleBoard)
 	{
 		BoardInstance = CastChecked<APuzzleBoard>(UGameplayStatics::GetActorOfClass(GetWorld(), PuzzleBoard));
 		CurrentNode = BoardInstance->GetClosestNode(GetOwner()->GetActorLocation());
@@ -25,6 +25,6 @@ void UPuzzleQueryComponent::BeginPlay()
 		{
 			CurrentNode->bIsOccupied = true;
 		}
-	}
+	}*/
 }
 

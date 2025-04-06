@@ -22,9 +22,8 @@ class PROGRAMMINGTEST_API APuzzleCrescentPiece : public APawn
 public:
 	APuzzleCrescentPiece();
 
-	UFUNCTION()
-	void OnComponentOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,UPrimitiveComponent* OtherCoponent, int32 OtherBodyIndex,
-		bool bFromSweep, const FHitResult& SweepResult);
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void UnPossessed() override;
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
@@ -51,7 +50,7 @@ public:
 	FISHomeDelegate OnIsHome;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Movement")
-	float MovementThreshold = 5.f;
+	float MovementThreshold = 2.f;
 
 private:
 	bool bIsHome = false;
@@ -60,7 +59,6 @@ private:
 	TObjectPtr<APuzzleNodes> TargetNode = nullptr;
 	TObjectPtr<AActor> TargetActor  = nullptr;
 	TArray<AActor*> OverlappingActors;
-	TSet<FVector> IgnoreLocations;
 	TArray<FVector> IgnoreDirections;
 	
 	UPROPERTY(EditAnywhere,Category = "Movement")

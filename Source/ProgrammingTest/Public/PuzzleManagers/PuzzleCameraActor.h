@@ -18,7 +18,6 @@ public:
 	// Sets default values for this actor's properties
 	APuzzleCameraActor();
 
-	virtual void PlaySequence(APlayerController* PC) override;
 
 protected:
 	// Called when the game starts or when spawned

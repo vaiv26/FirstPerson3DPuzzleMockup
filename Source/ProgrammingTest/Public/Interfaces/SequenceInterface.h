@@ -22,5 +22,6 @@ class PROGRAMMINGTEST_API ISequenceInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void PlaySequence(APlayerController* PC);
+	UFUNCTION(BlueprintCallable,BlueprintImplementableEvent,Category="Sequence Interface")
+	void PlaySequence();
 };

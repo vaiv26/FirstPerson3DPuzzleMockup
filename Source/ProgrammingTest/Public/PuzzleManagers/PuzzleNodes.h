@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "PuzzleNodes.generated.h"
 
+class USphereComponent;
+
 UCLASS()
 class PROGRAMMINGTEST_API APuzzleNodes : public AActor
 {
@@ -17,12 +19,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Node")
 	TArray<AActor*> ConnectedNodes;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Node")
-	bool bIsOccupied;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Node")
-	bool bIsCenterNode;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Node")
+	USphereComponent* CollisionComponent;
+	
+	bool bCanMove = true;
+	
 protected:
 	virtual void BeginPlay() override;
 
