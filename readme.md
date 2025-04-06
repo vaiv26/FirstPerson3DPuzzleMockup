@@ -3,7 +3,7 @@
 A first-person puzzle game mechanic implemented in Unreal Engine 5, featuring a unique crescent-shaped dice movement system on a diagonal grid.
 
 ## Project Links
-* **Video Demo**: [Watch on Google Drive](https://drive.google.com/file/d/1UKSYwOQMsROjfgP73scTWrkI-ewJCAqY/view?usp=sharing)
+* **Video Demo**: [Watch on Google Drive](https://drive.google.com/file/d/1XMa1J4lRCqCPgQKKU0o3r0ZvLztleqpf/view?usp=sharing)
 
 ## Technical Requirements
 * **Engine**: Unreal Engine 5.3.2
