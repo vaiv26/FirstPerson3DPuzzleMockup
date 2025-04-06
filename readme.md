@@ -21,7 +21,6 @@ Dice Puzzle is an interactive puzzle mechanic where players navigate crescent-sh
 ## Features
 
 ### Core Mechanics
-- Grid-based movement system on a 4x4 board with diagonal tracks
 - First-person to puzzle-view camera transitions
 - Interactive crescent-shaped dice with precise movement controls
 - Central goal position with completion validation
